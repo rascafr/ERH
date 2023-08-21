@@ -4,7 +4,7 @@ Proof-of-concept inspired by [URH](https://github.com/jopohl/urh), built with Ty
 
 > 💅 Current status is early stage / work in progress, mostly to test features, and it currently only supports [OOK](https://www.wikiwand.com/en/On%E2%80%93off_keying) modulation.
 
-![Preview animation](./media/preview.gif)
++<img src="./media/preview.gif" width="800px">
 
 ## Features
 
