@@ -1,22 +1,5 @@
-import fs from 'fs';
 import { IPCIQPayload } from './types';
-
-function uint8toSigned(n: number) {
-  // eslint-disable-next-line no-bitwise
-  return (n & 0x80) === 0x80 ? n - 256 : n;
-}
-
-function parseCS8real(data: any) {
-  const parsed = [];
-
-  for (let i = 0; i < data.length; ) {
-    parsed.push(
-      Math.sqrt(uint8toSigned(data[i++]) ** 2 + uint8toSigned(data[i++]) ** 2)
-    );
-  }
-
-  return parsed;
-}
+import { parseRadioFile } from './radioParsers';
 
 function filterRC(arr: number[]) {
   const out = [arr[0]];
@@ -87,8 +70,6 @@ function detectMinPulseWidth(arr: number[]) {
   // only keep groups that occurs more than 10%
   const filteredGroups = groups.filter((g) => g.count / totalCount >= 0.1);
 
-  console.log(totalCount, groups, filteredGroups);
-
   return filteredGroups.sort((a, b) => a.value - b.value)[0].value;
 }
 
@@ -97,9 +78,9 @@ function signalToPulses(arr: number[]) {
   let i = 0;
   while (i < arr.length) {
     const lvl = arr[i];
-    const istart = i;
+    const iStart = i;
     while (arr[i] === lvl && i < arr.length) i++;
-    widths.push({ level: lvl > 0 ? 1 : 0, diff: i - istart });
+    widths.push({ level: lvl > 0 ? 1 : 0, diff: i - iStart });
   }
   return widths;
 }
@@ -114,16 +95,11 @@ function trimEnd0(str: string) {
 }
 
 function signalToBinSequence(arr: number[], minPulse: number) {
-  // console.log('Base level', arr[0]);
   let i = 0;
-  console.log('Running loop...');
 
   while (arr[i] === arr[0] && i < arr.length) i++;
-  // console.log('starts at', i, arr[i]);
-  console.log('Running signalToPulses...');
 
   const pulses = signalToPulses(arr);
-  console.log('Done signalToPulses...', pulses);
 
   pulses.shift(); // remove first 00's
   // still a 0? trim again
@@ -139,57 +115,31 @@ function signalToBinSequence(arr: number[], minPulse: number) {
     }
   });
 
-  console.log('Done pulses.forEach...');
-
   // remove extra O's, but pad end to make it a multiple of 4
   // binSequence = binSequence.replace(/0*$/, '');
   binSequence = trimEnd0(binSequence);
   binSequence += '0'.repeat(4 - (binSequence.length % 4));
-
-  console.log('Done replace/repeat...');
 
   const split4sequence = binSequence.match(/.{1,4}/g) || [];
 
   const hexSequence = split4sequence
     .map((hex4) => parseInt(hex4, 2).toString(16))
     .join('');
-  // .replace(/0+$/g, '');
-  // .replace(/(?:0+)$/g, ''); // Use (?:) to create a non-capturing group
-
-  console.log('Done map/join.replace...');
-
-  console.log('Done signalToBinSequence...');
 
   return { hexSequence: trimEnd0(hexSequence), binSequence };
 }
 
 // eslint-disable-next-line import/prefer-default-export
 export function openFile(path: string): IPCIQPayload {
-  console.log('Parsing to Uint8Array...');
-  const fileBuffer = new Uint8Array(fs.readFileSync(path));
-
-  console.log('Running parseCS8real...');
-  const reals = parseCS8real(fileBuffer);
-
-  console.log('Running filterRC...');
+  const reals = parseRadioFile(path);
   const filtered = filterRC(reals);
-
-  console.log('Running avgLevel...');
   const avgLevel = Math.ceil(avg(filtered));
-
-  console.log('Running threshDetect...');
   const binaryLevels = threshDetect(filtered, avgLevel);
-
-  console.log('Running detectMinPulseWidth...');
   const minPulseWidth = detectMinPulseWidth(binaryLevels);
-
-  console.log('Running signalToBinSequence...');
   const { hexSequence, binSequence } = signalToBinSequence(
     binaryLevels,
     minPulseWidth
   );
-
-  console.log('Done!');
 
   return {
     fileName: path,
