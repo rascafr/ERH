@@ -2,7 +2,7 @@
 
 Proof-of-concept inspired by [URH](https://github.com/jopohl/urh), built with TypeScript Node, Electron and React.
 
-> 💅 Current status is early stage / work in progress, mostly to test features, and it currently only supports [OOK](https://www.wikiwand.com/en/On%E2%80%93off_keying) modulation.
+> 💅 Current status is early stage / work in progress, mostly to test features.
 
 ![Preview capture](./media/preview.png)
 
@@ -17,7 +17,12 @@ Proof-of-concept inspired by [URH](https://github.com/jopohl/urh), built with Ty
 
 ## Supported files types
 
-- `*.cs8` (HackRF IQ signed 8 bits integers), **currently limited to 100MiB**
+> Currently limited to 100MiB
+
+- `.raw`, `.complex16s`, `*.cs8` (`hackrf-transfer`), signed 8 bits IQ integers
+- `.complex16u`, `*.cu8` (unsigned 8 bits IQ signal integers)
+- `.complex32s`, `*.cs16` (HackRF recorded) IQ signed 8 bits integers
+- `.complex32u`, `*.cu16` (unsigned 16 bits IQ signal integers)
 
 ## Install & run
 
