@@ -3,29 +3,36 @@
 import { ipcMain } from 'electron';
 import { openFile, decimate } from './core';
 import { IPCIQPayload } from './types';
+import { parseRadioFile, registerAll } from './radioParsers';
 
 class CoreFileInstance {
   private filePath: string | null = null;
 
   private fileData: IPCIQPayload | null = null;
 
-  private screenWidth = 2000;
+  private MAX_WIDTH_SAMPLE = 2000;
+
+  constructor() {
+    // don't forget to register all RF file parser before opening one
+    registerAll();
+  }
 
   decimateN(values?: number[]) {
     if (!values) return [];
-    if (values.length < this.screenWidth) return values;
-    return decimate(values, Math.ceil(values.length / this.screenWidth));
+    if (values.length < this.MAX_WIDTH_SAMPLE) return values;
+    return decimate(values, Math.ceil(values.length / this.MAX_WIDTH_SAMPLE));
   }
 
   decimateNzoom(zoom: number, values?: number[]) {
     if (!values) return [];
-    if (values.length < this.screenWidth) return values;
+    if (values.length < this.MAX_WIDTH_SAMPLE) return values;
     return decimate(values, Math.ceil(values.length / zoom));
   }
 
   setCurrentFile(filePath: string | null) {
     if (filePath) {
       this.filePath = filePath;
+      parseRadioFile(this.filePath);
       this.fileData = openFile(this.filePath);
       this.notifyZoomLevelChanged(true);
     }
