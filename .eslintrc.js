@@ -1,5 +1,5 @@
 module.exports = {
-  extends: 'erb',
+  extends: 'airbnb',
   plugins: ['@typescript-eslint'],
   rules: {
     // A temporary hack related to IDE not resolving correct package.json
@@ -11,7 +11,9 @@ module.exports = {
     'import/no-import-module-exports': 'off',
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': 'error',
+    'prefer-template': 2,
     'no-plusplus': 'off',
+    'comma-dangle': 'off',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
@@ -22,8 +24,14 @@ module.exports = {
       },
     ],
   },
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 2020,
+    parser: '@babel/eslint-parser',
+    ecmaVersion: 'latest',
+    ecmaFeatures: {
+      jsx: true,
+      experimentalObjectRestSpread: true,
+    },
     sourceType: 'module',
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
